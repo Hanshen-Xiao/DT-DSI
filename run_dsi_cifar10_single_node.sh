@@ -17,7 +17,7 @@ lr=1
 mgn=1
 augment_multiplicity=2
 num_local_iter=20
-batch_enhencement=20
+batch_enhancement=20
 eps=8
 arch=WRN_16_4
 save_dir=log_cifar10
@@ -40,7 +40,7 @@ python -u main.py   --task cifar10 \
                     -p $print_freq \
                     -r \
                     --save-every $save_every \
-                    --batch-enhencement $batch_enhencement \
+                    --batch-enhancement $batch_enhancement \
                     --arch $arch \
                     --save-dir $save_dir
 

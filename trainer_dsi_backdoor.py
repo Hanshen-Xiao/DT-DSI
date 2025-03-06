@@ -4,6 +4,7 @@ from copy import deepcopy
 import os
 import random
 import statistics
+import sys
 import time
 from datetime import timedelta
 from typing import Optional
@@ -43,6 +44,10 @@ def activate(local_rank,args):
     args.rank=args.rank_node*args.gpu_per_node*args.process_per_gpu+local_rank
     args.device=f'cuda:{local_rank%args.gpu_per_node}'
 
+    current_dir = os.getcwd()
+    path_to_add = os.path.join(current_dir, 'BackdoorBench')
+    sys.path.append(path_to_add)
+    
     if args.rank==0:
         main_process(args.rank,args)
     else:
@@ -639,7 +644,7 @@ def train(train_loader, model, criterion, optimizer, epoch, val_loader=None):
             raw_update=do_one_raw_iteration(input, target, model, criterion, optimizer)
             all_diff=gather_results_in_main_process(raw_update.unsqueeze(0),chunk_sizes)-raw_update
 
-            if args.batch_enhencement>1:
+            if args.batch_enhancement>1:
                 raw_update_list.append(raw_update)
                 diff_list.append(all_diff)
 
@@ -647,20 +652,20 @@ def train(train_loader, model, criterion, optimizer, epoch, val_loader=None):
             raw_update=all_reduce(torch.zeros((optimizer.num_params),device=args.device,dtype=torch.float16 if args.half else torch.float32))/len(tags)
             all_diff=gather_results_in_main_process(raw_update.unsqueeze(0),chunk_sizes)
 
-            if args.batch_enhencement>1:
+            if args.batch_enhancement>1:
                 raw_update_list.append(raw_update)
                 diff_list.append(all_diff)
 
         all_iter_time.update(time.time()-end_2)
 
-        if (i+1)%args.batch_enhencement!=0:
+        if (i+1)%args.batch_enhancement!=0:
             end=time.time()
             continue
 
         end_2=time.time()
-        if args.batch_enhencement>1:
+        if args.batch_enhancement>1:
             raw_update=torch.mean(torch.stack(raw_update_list), dim=0)
-            all_diff=torch.cat(diff_list, dim=0)/args.batch_enhencement
+            all_diff=torch.cat(diff_list, dim=0)/args.batch_enhancement
             raw_update_list=[]
             diff_list=[]
         noisy_update=get_privatized_update(raw_update,all_diff,whether_to_log_detail(i,len(train_loader)))

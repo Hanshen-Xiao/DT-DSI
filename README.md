@@ -2,8 +2,6 @@
 
 ## Setting Up Environment for DSI
 
-We include the codes in the paper "Trustworthy Machine Learning through Data-Specific Indistinguishability". 
-
 You can run the following script to configure the necessary environment. Note that `requirements_1.txt` is sufficient for the `cifar10` and `llm` tasks, while `requirements_2.txt` is necessary for the `backdoor` task.
 
 ```
@@ -28,7 +26,7 @@ You can run the following script to train a model using the DSI approach with on
 ```
     ./run_dsi_llm_single_node.sh
 ```
-To customize the training process or modify the arguments, please refer to [Clarification of Required Arguments](#clarification-of-required-arguments) and `parser_config.py` to edit `run_dsi_cifar10_single_node.sh`.
+To customize the training process or modify the arguments, please refer to [Clarification of Required Arguments](#clarification-of-required-arguments) and `parser_config.py` to edit `run_dsi_llm_single_node.sh`.
 
 ## Reproducing the `backdoor` Task Results
 
@@ -36,7 +34,8 @@ You can run the following script to train a model using the DSI approach with on
 ```
     ./run_dsi_backdoor_single_node.sh
 ```
-To customize the training process or modify the arguments, please refer to [Clarification of Required Arguments](#clarification-of-required-arguments) and `parser_config.py` to edit `run_dsi_cifar10_single_node.sh`.
+To customize the training process or modify the arguments, please refer to [Clarification of Required Arguments](#clarification-of-required-arguments) and `parser_config.py` to edit `run_dsi_backdoor_single_node.sh`.
+Pretrained models in `pretrain` will be called. This task requires [BackdoorBench](https://github.com/SCLBD/BackdoorBench) for backdoor attack implementations. Please clone the BackdoorBench repository into your current directory.
 
 ## Clarification of Required Arguments
 - __`--task`__: Select a expiriment presented in paper. Choices = [`cifar10`, `llm`, `backdoor`]
@@ -53,7 +52,7 @@ To customize the training process or modify the arguments, please refer to [Clar
 - __`--mgn`__: Maximum gradient norm of (global) update clip. Set to a large number to disable clip.
 - __`--num-local-iter`__: Automatically enable `--full-mode` when `--num-local-iter` is more than 1.
 - __`--full-mode`__: Enable local updates. Will be set to `True` when `--num-local-iter` is more than 1.
-- __`--batch-enhencement`__: Number of subgroups, only used in `cifar10` task.
+- __`--batch-enhancement`__: Number of subgroups, only used in `cifar10` task.
 - __`--eps`__: Trustworthy guarantee, choises = range(9) where 0 represent $+\infty$ (no noise) for convenience.
 - __`--r`__: Enable resuming checkpoint from `--save-dir`.
 - __`--save-dir`__: Where log and checkpoint are placed.

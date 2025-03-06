@@ -20,7 +20,7 @@ def get_privatized_update(raw_update,all_diff,flag_logging):
             log(f"avg difference norm={torch.mean(torch.norm(all_diff,2,dim=1))}")
         return raw_update
 
-    noise_multiplier=multiplier[args.epsilon]*(args.epochs*50000/args.batch_size)**0.5 if not args.full_mode else multiplier[args.epsilon]*(args.epochs)**0.5
+    noise_multiplier=multiplier[args.epsilon]*(args.epochs)**0.5
     if flag_logging:
         log(f"\n->->->-> privatization module logging... \n  epsilon: {args.epsilon}  noise_multiplier: {noise_multiplier}")
 

@@ -378,6 +378,9 @@ def prepare_whole_task_llm(_args=None):
     args.dataset_config_name= "wikitext-103-raw-v1"
     args.canary_len = 6
 
+    if args.model_name_or_path in ['opt-125m', 'opt-350m']:
+        args.model_name_or_path = f"facebook/{args.model_name_or_path}"
+
     config = AutoConfig.from_pretrained(args.model_name_or_path)
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True)
     model = AutoModelForCausalLM.from_pretrained(
@@ -391,7 +394,7 @@ def prepare_whole_task_llm(_args=None):
         return model, None, None
     
 
-    raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name, cache_dir='datacache')
+    raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name)
     if "validation" not in raw_datasets.keys():
         raw_datasets["validation"] = load_dataset(
             args.dataset_name,
@@ -403,8 +406,10 @@ def prepare_whole_task_llm(_args=None):
             args.dataset_config_name,
             split=f"train[{5}%:]",
         )
-    wiki_size = args.wiki_size/100
-    raw_datasets['train']=raw_datasets['train'].train_test_split(test_size=1-wiki_size, shuffle=False)['train']
+
+    if not args.wiki_size == 103:
+        wiki_size = args.wiki_size/103
+        raw_datasets['train']=raw_datasets['train'].train_test_split(test_size=1-wiki_size, shuffle=False)['train']
 
     canary_ingredients = None
     if args.add_canary:    
@@ -584,7 +589,7 @@ def train(train_loader, model, criterion, optimizer, epoch, eval_ingredients=Non
             # communication operation
             all_diff=gather_results_in_main_process(raw_update.unsqueeze(0),chunk_sizes)-raw_update
 
-            if args.batch_enhencement>1:
+            if args.batch_enhancement>1:
                 raw_update_list.append(raw_update)
                 diff_list.append(all_diff)
 
@@ -592,20 +597,20 @@ def train(train_loader, model, criterion, optimizer, epoch, eval_ingredients=Non
             raw_update=all_reduce(torch.zeros((optimizer.num_params),device=args.device,dtype=torch.float16 if args.half else torch.float32))/len(tags)
             all_diff=gather_results_in_main_process(raw_update.unsqueeze(0),chunk_sizes)
 
-            if args.batch_enhencement>1:
+            if args.batch_enhancement>1:
                 raw_update_list.append(raw_update)
                 diff_list.append(all_diff)
 
         all_iter_time.update(time.time()-end_2)
 
-        if (i+1)%args.batch_enhencement!=0:
+        if (i+1)%args.batch_enhancement!=0:
             end=time.time()
             continue
 
         end_2=time.time()
-        if args.batch_enhencement>1:
+        if args.batch_enhancement>1:
             raw_update=torch.mean(torch.stack(raw_update_list), dim=0)
-            all_diff=torch.cat(diff_list, dim=0)/args.batch_enhencement
+            all_diff=torch.cat(diff_list, dim=0)/args.batch_enhancement
             raw_update_list=[]
             diff_list=[]
         noisy_update=get_privatized_update(raw_update,all_diff,whether_to_log_detail(i,len(train_loader)))

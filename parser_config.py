@@ -38,8 +38,8 @@ def create_parser():
                         metavar='W', help='weight decay (default: 1e-4)')
     parser.add_argument('--using-lr-scheduler',dest='using_lr_scheduler',action='store_true',
                         help='use learning rate scheduler to run')    
-    parser.add_argument('--batch-enhencement',default=1,type=int, 
-                        help='batch_enhencement*batchsize=real batch size')
+    parser.add_argument('--batch-enhancement',default=1,type=int, 
+                        help='batch_enhancement*batchsize=real batch size')
 
 # Arragement arguments
     parser.add_argument('--print-freq', '-p', default=50, type=int,
@@ -156,7 +156,7 @@ def create_parser_llm():
     parser.add_argument('--duplication', action='store_true',
                         help='duplicate 1000 data points of wiki-103 for 10 times')
     parser.add_argument('--model-name-or-path', default='gpt2', type=str,
-                        choices=['gpt2','opt-350m','opt-125m','gpt2-medium'],
+                        # choices=['gpt2','opt-350m','opt-125m','gpt2-medium'],
                         metavar='MODEL', help='model name or path')
     parser.add_argument('--canary-prompt', default='normal', type=str,
                         choices=['normal','wizard'],
